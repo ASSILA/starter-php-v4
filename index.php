@@ -17,8 +17,16 @@
 	$helper = new FacebookRedirectLoginHelper( 'http://localhost/facebook/' );
 
 	try {
-		// Get access token from the code parameter in the URL.
-		$session = $helper->getSessionFromRedirect();
+		// Check if you already have an access token in the PHP Session
+		if ( isset( $_SESSION['access_token'] ) ) {
+			// Create new FacebookSession directly from the Access Token.
+			$session = new FacebookSession( $_SESSION['access_token'] );
+		} else {
+			// Get access token from the code parameter in the URL.
+			$session = $helper->getSessionFromRedirect();
+			// store the access token in a PHP Session.
+			if($session) $_SESSION['access_token'] = $session->getToken();
+		}
 	} catch( FacebookRequestException $ex ) {
 		// When Facebook returns an error.
 		$session = null;
