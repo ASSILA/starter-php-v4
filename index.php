@@ -1,5 +1,7 @@
 <?php
 
+	session_start();
+	
 	// register the vendors including the Facebook SDK
 	require 'vendor/autoload.php';
 
