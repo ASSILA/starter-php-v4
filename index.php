@@ -55,6 +55,7 @@
 		}
 	} else {
 		// Generate the login URL for Facebook authentication.
-		$loginUrl = $helper->getLoginUrl();
+		// Request additional permission using the $scope array
+		$loginUrl = $helper->getLoginUrl(array('email'));
 		echo '<a href="' . $loginUrl . '">Login</a>';
 	}
