@@ -6,6 +6,8 @@
 	// Load the Facebook classes
 	use Facebook\FacebookSession;
 	use Facebook\FacebookRedirectLoginHelper;
+	use Facebook\FacebookRequest;
+	use Facebook\GraphUser;
 	
 	// Set the initial Facebook App ID and Secret key
 	// get your App ID and Secret from here (https://developers.facebook.com/apps/)
@@ -38,6 +40,19 @@
 	if ( isset( $session ) ) {
 		// Successfully got a valid session for the user
 		echo "Logged In";
+		try {
+			$me = (new FacebookRequest(
+				$session, 'GET', '/me'
+			))->execute()->getGraphObject(GraphUser::className());
+			// Output user name.
+			echo $me->getName();
+		} catch (FacebookRequestException $ex) {
+			// The Graph API returned an error.
+			print_r( $ex );
+		} catch (\Exception $ex) {
+			// Some other error occurred.
+			print_r( $ex );
+		}
 	} else {
 		// Generate the login URL for Facebook authentication.
 		$loginUrl = $helper->getLoginUrl();
