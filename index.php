@@ -23,6 +23,7 @@
 		if ( isset( $_SESSION['access_token'] ) ) {
 			// Create new FacebookSession directly from the Access Token.
 			$session = new FacebookSession( $_SESSION['access_token'] );
+			$session->validate();
 		} else {
 			// Get access token from the code parameter in the URL.
 			$session = $helper->getSessionFromRedirect();
