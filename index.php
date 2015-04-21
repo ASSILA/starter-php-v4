@@ -6,49 +6,54 @@
 	require 'vendor/autoload.php';
 
 	// Load the Facebook classes
-	use Facebook\FacebookSession;
-	use Facebook\FacebookRedirectLoginHelper;
-	use Facebook\FacebookRequest;
-	use Facebook\GraphUser;
+	use Facebook\Facebook;
 	
 	// Set the initial Facebook App ID and Secret key
 	// get your App ID and Secret from here (https://developers.facebook.com/apps/)
-	$App_ID 	= "XXX";
-	$App_Secret = "YYY";
-	FacebookSession::setDefaultApplication($App_ID, $App_Secret);
+	$AppID 	= "XXX";
+	$AppSecret = "YYY";
 	
-	// login helper with redirect_uri
-	$helper = new FacebookRedirectLoginHelper( 'http://localhost/facebook/' );
-
+	// get the current AccessToken from the session if exists
+	$accessToken = (isset($_SESSION['facebook_access_token']))? $_SESSION['facebook_access_token'] : null;
+	
+	// initiate the Facebook class
+	$fb = new Facebook([
+		'app_id' => $AppID,
+		'app_secret' => $AppSecret,
+		'default_access_token' => $accessToken
+	]);
+	
 	try {
-		// Check if you already have an access token in the PHP Session
-		if ( isset( $_SESSION['access_token'] ) ) {
-			// Create new FacebookSession directly from the Access Token.
-			$session = new FacebookSession( $_SESSION['access_token'] );
-			$session->validate();
-		} else {
-			// Get access token from the code parameter in the URL.
-			$session = $helper->getSessionFromRedirect();
-			// store the access token in a PHP Session.
-			if($session) $_SESSION['access_token'] = $session->getToken();
+		// if there is no AccessToken in the PHP Session
+		if(!$accessToken){
+			// try to get new AccessToken from the RedirectLoginHelper
+			$helper = $fb->getRedirectLoginHelper();
+			$accessToken = $helper->getAccessToken();
+			
+			// Update the Default AccessToken
+			$fb->setDefaultAccessToken($accessToken);
+			
+			// store the new AccessToken in the PHP Session
+			$_SESSION['facebook_access_token'] = (string) $accessToken;
 		}
-	} catch( FacebookRequestException $ex ) {
+	} catch( FacebookSDKException $ex ) {
 		// When Facebook returns an error.
-		$session = null;
+		$accessToken = null;
 	} catch( \Exception $ex ) {
 		// When validation fails or other local issues.
-		$session = null;
+		$accessToken = null;
 	}
 
-	if ( isset( $session ) ) {
-		// Successfully got a valid session for the user
-		echo "Logged In";
+	if (isset($accessToken)) {
+		// Logged in!
 		try {
-			$me = (new FacebookRequest(
-				$session, 'GET', '/me'
-			))->execute()->getGraphObject(GraphUser::className());
+			// Get the current user info
+			$response = $fb->get('me');
+			
 			// Output user name.
+			$me = $response->getGraphUser();
 			echo $me->getName();
+			
 		} catch (FacebookRequestException $ex) {
 			// The Graph API returned an error.
 			print_r( $ex );
@@ -57,8 +62,8 @@
 			print_r( $ex );
 		}
 	} else {
-		// Generate the login URL for Facebook authentication.
-		// Request additional permission using the $scope array
-		$loginUrl = $helper->getLoginUrl(array('email'));
+		// Not logged in!
+		$helper = $fb->getRedirectLoginHelper();
+		$loginUrl = $helper->getLoginUrl('http://localhost/starter-php-v4/',array('email'));
 		echo '<a href="' . $loginUrl . '">Login</a>';
 	}
