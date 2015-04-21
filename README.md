@@ -1,5 +1,5 @@
-# starter-php-v4
-Starter Facebook App using Facebook PHP SDK v4
+# starter-php-v4.1
+Starter Facebook App using Facebook PHP SDK v4.1
 
 This starter application will show you how to:
 
@@ -10,5 +10,3 @@ This starter application will show you how to:
 5. How to use App Access Token for App-level requests
 6. Execute simple request to get the Logged-in User data
 7. Handle App or Permissions removals
-
-To read the full guide, please visit this Blog post (in Arabic)
